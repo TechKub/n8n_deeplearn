@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  n8n:
+    container_name: n8n
+    image: docker.n8n.io/n8nio/n8n
+    environment:
+      - WEBHOOK_URL=${URL}
+      - TZ=${TIMEZONE}
+      - GENERIC_TIMEZONE=${TIMEZONE}
+    networks:
+      - n8n-network
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+  ngrok:
+    container_name: ngrok
+    image: ngrok/ngrok:latest
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_TOKEN}
+    command:
+      - "start"
+      - "--all"
+      - "--config"
+      - "/etc/ngrok.yml"
+    networks:
+      - n8n-network
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
+
+  whisperx-api:
+    container_name: whisperx-api
+    build:
+      context: ./whisperx-api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./whisperx-api:/app
+    networks:
+      - n8n-network
+
+    develop:
+      watch:
+        - action: sync
+          path: ./whisperx-api
+          target: /app
+          ignore:
+            - .venv/
+        - action: rebuild
+          path: ./whisperx-api/pyproject.toml
+
+volumes:
+  n8n_data:
+
+networks:
+  n8n-network:
+    driver: bridge
