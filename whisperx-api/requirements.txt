@@ -1,0 +1,13 @@
+--find-links https://download.pytorch.org/whl/cpu
+
+torch
+torchaudio
+torchvision
+
+git+https://github.com/m-bain/whisperX.git
+
+fastapi
+uvicorn
+python-dotenv
+ffmpeg-python
+pyannote-audio
